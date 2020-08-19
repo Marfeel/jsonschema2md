@@ -402,3 +402,39 @@ Reference this group by using
       .contains('# Simple Schema');
   });
 });
+
+describe('Testing Markdown Builder: Skip properties', () => {
+  let results;
+
+  before(async () => {
+    const schemas = await loadschemas('readme-1');
+    const builder = build({ header: true, links: { abstract: 'fooabstract.html' }, skipproperties: ['typesection', 'definedinfact'] });
+    results = builder(schemas);
+  });
+
+  it('Skips the expected properties', () => {
+    assertMarkdown(results.abstract)
+      .equals('heading > text', { type: 'text', value: 'Abstract Schema' })
+      .contains('cannot be read or written')
+      .contains('nonfoo Access Restrictions')
+      .contains('bar Access Restrictions')
+      .contains('### foo Access Restrictions')
+      .fuzzy`
+## Definitions group second
+
+Reference this group by using
+
+\`\`\`json
+{"$ref":"https://example.com/schemas/abstract#/$defs/second"}
+\`\`\``
+      .fuzzy`
+\`bar\`
+
+-   is optional
+-   Type: \`string\`
+-   cannot be null`
+      .contains('fooabstract.html');
+    //      .inspect()
+    //      .print();
+  });
+});
